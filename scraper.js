@@ -63,35 +63,39 @@ function getHREF(){
   return shirts;
 } // end functionOne
 
-function updateArray() { // Update array with all of the properties 
+function updateArray() { // Set up csv write and call write function
   findRemoveSync('./data', {extensions: ['.csv']}); // remove any data folder files with the csv extension 
-  var date = new Date();
   var writerFile1 = csvWriter({headers: ["Title", "Price", "ImageURL", "URL", "Time"]}); //Headers for our csv file
   writerFile1.pipe(fs.createWriteStream(dirData + '/' + moment().format('MMMM Do YYYY, h:mm:ss a') + '.csv')); // This names the file stored with our csv data
-  
-  for(var shirt in shirts) {  // for each element in our array
-    var url = 'http://shirts4mike.com/' + shirts[shirt].href;
-    request(url, ( function(shirt) {    // self-executing function
-      return function(err, resp, body) {
-      if (err) {
-        console.log("There was an error connecting to the shirts4mike.com shirt detail page.");
-        var errorString = '[' + (new Date().toString()) + '] ' +' Error connecting to the shirts4mike.com shirt detail page. The Error Code is ' + err.code  +'\r\n';
-        fs.appendFile('scraper-error.log', errorString, function (err) {
-        }); 
-      } else {
-        $ = cheerio.load(body);
-        var title = $('title').text(); 
-        var price  = $('.price').text(); 
-        var image  = $('img').attr("src"); 
-        shirts[shirt].title = title; // Update all of our properites
-        shirts[shirt].price = price;
-        shirts[shirt].image = image;
-        shirts[shirt].time = date.toTimeString();
-        writerFile1.write([shirts[shirt].title, shirts[shirt].price, shirts[shirt].image, shirts[shirt].href, shirts[shirt].time]);
-        } // end else
-      }; // end request
-      })(shirt));
+  for(var i=0; i < shirts.length; i++) {  // for each element in our array
+    goUpdate(i, writerFile1);
     } // end for
 } // end updateArray function
+
+function goUpdate(i, writerFile1) { // Update array with all of the properties
+  var date = new Date();
+  var url = 'http://shirts4mike.com/' + shirts[i].href;
+  var key = i;
+  request(url, ( function(key) {    // self-executing function
+    return function(err, resp, body) {
+    if (err) {
+      console.log("There was an error connecting to the shirts4mike.com shirt detail page.");
+      var errorString = '[' + (new Date().toString()) + '] ' +' Error connecting to the shirts4mike.com shirt detail page. The Error Code is ' + err.code  +'\r\n';
+      fs.appendFile('scraper-error.log', errorString, function (err) {
+      }); 
+    } else {
+      $ = cheerio.load(body);
+      var title = $('title').text(); 
+      var price  = $('.price').text(); 
+      var image  = $('img').attr("src"); 
+      shirts[key].title = title; // Update all of our properites
+      shirts[key].price = price;
+      shirts[key].image = image;
+      shirts[key].time = date.toTimeString();
+      writerFile1.write([shirts[key].title, shirts[key].price, shirts[key].image, shirts[key].href, shirts[key].time]);
+      } // end else
+    }; // end request
+    })(key));
+} // end goUpdate function
 
 start();
