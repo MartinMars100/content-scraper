@@ -17,7 +17,6 @@ var shirt = []; // New Array Literal Notation
    // Below we create a data folder if one doesn't already exist
 var fs = require('fs');
 var dirData = './data';
-var dirError = './error';
 
 if (!fs.existsSync(dirData)){ // create data folder (for our csv) if it doesn't exist
     fs.mkdirSync(dirData);
@@ -65,14 +64,14 @@ function getHREF(){
 } // end functionOne
 
 function updateArray() { // Update array with all of the properties 
-  var result = findRemoveSync('./data', {extensions: ['.csv']}); // remove any data folder files with the csv extension 
+  findRemoveSync('./data', {extensions: ['.csv']}); // remove any data folder files with the csv extension 
   var date = new Date();
   var writerFile1 = csvWriter({headers: ["Title", "Price", "ImageURL", "URL", "Time"]}); //Headers for our csv file
   writerFile1.pipe(fs.createWriteStream(dirData + '/' + moment().format('MMMM Do YYYY, h:mm:ss a') + '.csv')); // This names the file stored with our csv data
   
-  for (key in shirt) { // for each element in our array
-    var url = 'http://shirts4mike.com/' + shirt[key].href;
-    request(url, ( function(key) {    // self-executing function
+  for(var i = 0; i < shirt.length -1; i++) {  // for each element in our array
+    var url = 'http://shirts4mike.com/' + shirt[i].href;
+    request(url, ( function(i) {    // self-executing function
       return function(err, resp, body) {
       if (err) {
         console.log("There was an error connecting to the shirts4mike.com shirt detail page.");
@@ -84,14 +83,14 @@ function updateArray() { // Update array with all of the properties
         var title = $('title').text(); 
         var price  = $('.price').text(); 
         var image  = $('img').attr("src"); 
-        shirt[key].title = title; // Update all of our properites
-        shirt[key].price = price;
-        shirt[key].image = image;
-        shirt[key].time = date.toTimeString();
-        writerFile1.write([shirt[key].title, shirt[key].price, shirt[key].image, shirt[key].href, shirt[key].time]);
+        shirt[i].title = title; // Update all of our properites
+        shirt[i].price = price;
+        shirt[i].image = image;
+        shirt[i].time = date.toTimeString();
+        writerFile1.write([shirt[i].title, shirt[i].price, shirt[i].image, shirt[i].href, shirt[i].time]);
         } // end else
       }; // end request
-      })(key));
+      })(i));
     } // end for
 } // end updateArray function
 
