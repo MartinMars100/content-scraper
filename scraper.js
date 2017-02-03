@@ -13,7 +13,7 @@ var csvWriter = require('csv-write-stream');
    // We use find-remove to remove the old csv file before creating a new one
 var findRemoveSync = require('find-remove');
    // shirt is our global array
-var shirt = []; // New Array Literal Notation
+var shirts = []; // New Array Literal Notation
    // Below we create a data folder if one doesn't already exist
 var fs = require('fs');
 var dirData = './data';
@@ -44,10 +44,10 @@ function start() { // get method to shirts4mike main page
 } // end start
 
 function shirtBuild(key, href){ // build shirt array beginning with href property
-  shirt[key] = new Shirt(href); 
+  shirts[key] = new Shirts(href); 
 }
 
-function Shirt(href, title, price, image, time) { // Constructor Function
+function Shirts(href, title, price, image, time) { // Constructor Function
   this.title = title;
   this.price = price;
   this.image = image;
@@ -60,7 +60,7 @@ function getHREF(){
     var href = $('a', this).attr("href"); // Get the href of the current(this) list
     shirtBuild(key, href); // build array with each href property
   }); // end each
-  return shirt;
+  return shirts;
 } // end functionOne
 
 function updateArray() { // Update array with all of the properties 
@@ -69,9 +69,9 @@ function updateArray() { // Update array with all of the properties
   var writerFile1 = csvWriter({headers: ["Title", "Price", "ImageURL", "URL", "Time"]}); //Headers for our csv file
   writerFile1.pipe(fs.createWriteStream(dirData + '/' + moment().format('MMMM Do YYYY, h:mm:ss a') + '.csv')); // This names the file stored with our csv data
   
-  for(var i = 0; i < shirt.length -1; i++) {  // for each element in our array
-    var url = 'http://shirts4mike.com/' + shirt[i].href;
-    request(url, ( function(i) {    // self-executing function
+  for(var shirt in shirts) {  // for each element in our array
+    var url = 'http://shirts4mike.com/' + shirts[shirt].href;
+    request(url, ( function(shirt) {    // self-executing function
       return function(err, resp, body) {
       if (err) {
         console.log("There was an error connecting to the shirts4mike.com shirt detail page.");
@@ -83,14 +83,14 @@ function updateArray() { // Update array with all of the properties
         var title = $('title').text(); 
         var price  = $('.price').text(); 
         var image  = $('img').attr("src"); 
-        shirt[i].title = title; // Update all of our properites
-        shirt[i].price = price;
-        shirt[i].image = image;
-        shirt[i].time = date.toTimeString();
-        writerFile1.write([shirt[i].title, shirt[i].price, shirt[i].image, shirt[i].href, shirt[i].time]);
+        shirts[shirt].title = title; // Update all of our properites
+        shirts[shirt].price = price;
+        shirts[shirt].image = image;
+        shirts[shirt].time = date.toTimeString();
+        writerFile1.write([shirts[shirt].title, shirts[shirt].price, shirts[shirt].image, shirts[shirt].href, shirts[shirt].time]);
         } // end else
       }; // end request
-      })(i));
+      })(shirt));
     } // end for
 } // end updateArray function
 
